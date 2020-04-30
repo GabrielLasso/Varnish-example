@@ -18,6 +18,34 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 fun Application.module(testing: Boolean = false) {
     routing {
         get("/") {
+            call.respondHtml {
+                body {
+                    text("This route is not cached. The only cached routes in the server is ")
+                    a("/cached1") {
+                        text("/cached1")
+                    }
+                    text(" and ")
+                    a("/cached2") {
+                        text("/cached2")
+                    }
+                }
+            }
+        }
+        get("/cached1") {
+            val now = Date()
+            call.respondHtml {
+                body {
+                    p {
+                        text("Current time: ")
+                        HTMLTag("esi:include", consumer, mapOf("src" to "/current_time"), null, false, true).visit {  }
+                    }
+                    p {
+                        text("Last cached time: $now")
+                    }
+                }
+            }
+        }
+        get("/cached2") {
             val now = Date()
             call.respondHtml {
                 body {

@@ -40,7 +40,8 @@ sub vcl_backend_response {
     #
     # Here you clean the response headers, removing silly Set-Cookie headers
     # and other mistakes your backend does.
-    if (bereq.url == "/current_time") {
+    if (bereq.url != "/cached1"
+     && bereq.url != "/cached2") {
         set beresp.uncacheable = true;
         return(deliver);
     }
