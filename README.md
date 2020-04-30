@@ -62,6 +62,8 @@ sub vcl_recv {
 ```
 
 ## Partes dinâmicas
+[Tenho que atualizar aqui, o jeito que está implementado é um pouco diferente]
+
 Ao adicionarmos a tag `<esi:include src="/current_time">` no HTML, indicamos para o varnish que ele deve buscar essa informação em `/current_time`. Então, nós informamos no arquivo de configurações que não queremos cachear a rota `current_time` com:
 ```
     if (bereq.url == "/current_time") {

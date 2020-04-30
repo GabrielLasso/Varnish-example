@@ -33,18 +33,22 @@ sub vcl_recv {
         }
         return (purge);
     }
+    # Cache only this routes
+    if (req.url == "/cached1"
+     || req.url == "/cached2") {
+        return (hash);
+        unset req.http.cookie;
+    }
+    # Pass by default
+    return (pass);
 }
+
 
 sub vcl_backend_response {
     # Happens after we have read the response headers from the backend.
     #
     # Here you clean the response headers, removing silly Set-Cookie headers
     # and other mistakes your backend does.
-    if (bereq.url != "/cached1"
-     && bereq.url != "/cached2") {
-        set beresp.uncacheable = true;
-        return(deliver);
-    }
     set beresp.do_esi = true;
 }
 
