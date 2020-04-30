@@ -17,13 +17,23 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
     routing {
-        get("/time1") {
-            val time = Date()
-            call.respondText("It is $time", contentType = ContentType.Text.Plain)
+        get("/") {
+            val now = Date()
+            call.respondHtml {
+                body {
+                    p {
+                        text("Current time: ")
+                        HTMLTag("esi:include", consumer, mapOf("src" to "/current_time"), null, false, true).visit {  }
+                    }
+                    p {
+                        text("Last cached time: $now")
+                    }
+                }
+            }
         }
-        get("/time2") {
-            val time = Date()
-            call.respondText("It is $time", contentType = ContentType.Text.Plain)
+        get("/current_time") {
+            val now = Date()
+            call.respondText(now.toString())
         }
     }
 }

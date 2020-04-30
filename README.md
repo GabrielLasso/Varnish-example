@@ -18,10 +18,10 @@ Para limpar o cache em uma rota, basta fazer um request HTTP com o verbo PURGE p
 
 Ex:
 ```
-curl -X PURGE 127.0.0.1:6081/time1
+curl -X PURGE 127.0.0.1:6081
 ```
 
-Note que isso só limpa o cache da rota `/time1`. Se você acessar a rota `/time2`, ela continua cacheada.
+Note que isso só limpa o cache da rota `/`. Se você acessar outras rotas, elas continuarão cacheadas.
 
 ## Configurando o cache
 
@@ -61,5 +61,25 @@ sub vcl_recv {
 }
 ```
 
+## Partes dinâmicas
+Ao adicionarmos a tag `<esi:include src="/current_time">` no HTML, indicamos para o varnish que ele deve buscar essa informação em `/current_time`. Então, nós informamos no arquivo de configurações que não queremos cachear a rota `current_time` com:
+```
+    if (bereq.url == "/current_time") {
+        set beresp.uncacheable = true;
+        return(deliver);
+    }
+```
+E assim, toda vez que for feito um request em `/`, a única informação que será consultada no backend é o `current_time`. O resto estará cacheado.
+
+Para ativar isso, temos que ligar o ESI nas configurações com a linha
+```
+    set beresp.do_esi = true;
+```
+
 ## Uso no projeto
 Para usar o varnish no projeto, a ideia é que toda vez que uma entidade for alterada, o servidor vai executar um request com o verbo PURGE na rota da API que pega essa entidade. Assim a API fica sempre atualizada e é cacheada.
+
+## Dificuldades
+* Parâmetros diferentes do request geram objetos diferentes para o varnish, então se dermos um `PURGE` em `/`, vamos limpar somente o cache de `/`, não de `/?foo=bar`, por exemplo.
+
+Solução: existe o método `ban` para invaliadar cache que aceita regras mais flexíveis do que o `purge`. Com ele podemos comparar a url com uma regex, por exemplo.
